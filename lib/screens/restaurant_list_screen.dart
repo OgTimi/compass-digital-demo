@@ -24,41 +24,51 @@ class _RestaurantListScreenState extends State<RestaurantListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Local Restaurants')),
-      body: FutureBuilder<List<Restaurant>>(
-        future: _restaurantFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No restaurants found'));
-          }
-
-          final restaurants = snapshot.data!;
-          return ListView.builder(
-            itemCount: restaurants.length,
-            itemBuilder: (context, index) {
-              final restaurant = restaurants[index];
-              return RestaurantListItem(restaurant: restaurant);
-              return Card(
-                margin: const EdgeInsets.all(8),
-                child: ListTile(
-                  leading: restaurant.imageUrl.isNotEmpty
-                      ? Image.network(
-                          restaurant.imageUrl,
-                          width: 60,
-                          fit: BoxFit.cover,
-                        )
-                      : const Icon(Icons.restaurant),
-                  title: Text(restaurant.name),
-                  subtitle: Text('${restaurant.address} ${restaurant.rating}'),
-                  isThreeLine: true,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              decoration: const InputDecoration(
+                hintText: 'Search restaurants...',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(30.0)),
                 ),
-              );
-            },
-          );
-        },
+              ),
+              onSubmitted: (value) {
+                setState(() {
+                  _restaurantFuture = yelpService.fetchRestaurants(
+                    value.isEmpty ? 'Toronto' : value,
+                  );
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<List<Restaurant>>(
+              future: _restaurantFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('No restaurants found'));
+                }
+
+                final restaurants = snapshot.data!;
+                return ListView.builder(
+                  itemCount: restaurants.length,
+                  itemBuilder: (context, index) {
+                    final restaurant = restaurants[index];
+                    return RestaurantListItem(restaurant: restaurant);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
