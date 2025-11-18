@@ -9,7 +9,7 @@ class YelpService {
 
   Future<List<Restaurant>> fetchRestaurants(String location) async {
     try {
-      List<Restaurant> restuarants = [];
+      List<Restaurant> restaurants = [];
       final response = await http.get(
         Uri.parse('$_baseUrl/search?term=restaurants&location=$location'),
         headers: {'Authorization': 'Bearer ${Configurations.yelpApiKey}'},
@@ -18,11 +18,11 @@ class YelpService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List businesses = data['businesses'];
-        restuarants = businesses
+        restaurants = businesses
             .map((business) => Restaurant.fromJson(business))
             .toList();
       }
-      return restuarants;
+      return restaurants;
     } catch (e, stackTrace) {
       if (kDebugMode) {
         debugPrint('Error fetching restaurants: $e');
